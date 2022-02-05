@@ -108,4 +108,6 @@ def load_data(path, array=True, show_data=False):
         plt.show()
     if array:
         data = np.array(data)
+
+    data = data / 255
     return data

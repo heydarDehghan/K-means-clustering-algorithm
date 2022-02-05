@@ -7,19 +7,19 @@ from services import Data
 class KMeans:
 
     def __init__(self, data, k_number=16, kmeans_type: KMeansType = KMeansType.PLUS_PLUS_KMEANS):
-        self.data = data
+        self.data = np.reshape(data, (data.shape[0] * data.shape[1], data.shape[2]))
         self.k_number = k_number
         self.kmeans_type = kmeans_type
         self.WCSS_history = []
         self.current_wcss = None
         self.labels = np.zeros((self.data.shape[0], 1))
-        self.centroids = np.zeros((self.k_number, self.data.shape[1], self.data.shape[-1]))
+        self.centroids = np.zeros((self.k_number, self.data.shape[1]))
         self.init_centroid()
 
     def calc_dist(self, row_index):
         main_list_dist = []
         for point_main in self.centroids:
-            list_dict = [(index, np.sum(np.subtract(point, point_main) ** 2)) for index, point in enumerate(self.data)]
+            list_dict = [(index, np.sum(np.square(np.subtract(point, point_main)))) for index, point in enumerate(self.data)]
             list_dict.sort(key=lambda x: x[1])
             for min_dist_point in list_dict:
                 if min_dist_point not in main_list_dist and min_dist_point[1] != 0:
@@ -50,6 +50,7 @@ class KMeans:
     def update_centroid(self):
         for index in range(self.k_number):
             points_with_label_k = self.data[self.labels == index]
+            x = np.mean(points_with_label_k, axis=0)
             self.centroids[index] = np.mean(points_with_label_k, axis=0)
 
     def calculate_wcss(self):
@@ -72,7 +73,7 @@ class KMeans:
         self.update_centroid()
         for x in range(100):
             self.calculate_wcss()
-            if len(self.WCSS_history) > 0 and np.abs(self.WCSS_history[-1] - self.current_wcss) == 0:
+            if len(self.WCSS_history) > 0 and self.WCSS_history[-1] - self.current_wcss == 0 :
                 break
             self.WCSS_history.append(self.current_wcss)
             self.predict_label()
